@@ -30,6 +30,7 @@
 #ifndef __LIB_SDK_COMMON_strConv_H__
 #define __LIB_SDK_COMMON_strConv_H__
 
+#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,12 +56,146 @@ extern "C" {
 	** returned string is obtained from malloc().
 	*/
 	int lo_C2Utf8(char** pout , const char *zinname);
-    int lo_Utf82C(char** pout , const char *zstr);
+	int lo_Utf82C(char** pout , const char *zstr);
 
+
+	class CC2W
+	{
+	public:
+		CC2W(const char* z)
+			:_out(0)
+		{
+			_length = lo_C2W(&_out , z);
+		}
+		~CC2W()
+		{
+			if( _out ) free(_out);
+		}
+		wchar_t* c_str() const
+		{
+			return ( _out )?_out:L"";
+		}
+		int length()const{ return _length;}
+	private:
+		wchar_t* _out;
+		int _length;
+	};
+
+
+	class CW2C
+	{
+	public:
+		CW2C(const wchar_t* z)
+			:_out(0)
+		{
+			_length=lo_W2C(&_out , z);
+		}
+		~CW2C()
+		{
+			if( _out ) free(_out);
+		}
+		char* c_str() const
+		{
+			return ( _out )?_out:"";
+		}
+		int length()const{ return _length;}
+	private:
+		char* _out;
+		int _length;
+	};
+
+
+	class CW2UTF8
+	{
+	public:
+		CW2UTF8(const wchar_t* z)
+			:_out(0)
+		{
+			_length=lo_W2Utf8(&_out , z);
+		}
+		~CW2UTF8()
+		{
+			if( _out ) free(_out);
+		}
+		char* c_str() const
+		{
+			return ( _out )?_out:"";
+		}
+		int length()const{ return _length;}
+	private:
+		char* _out;
+		int _length;
+	};
+
+	class CUTF82W
+	{
+	public:
+		CUTF82W(const char* z)
+			:_out(0)
+		{
+			_length=lo_Utf82W(&_out , z);
+		}
+		~CUTF82W()
+		{
+			if( _out ) free(_out);
+		}
+		wchar_t* c_str() const
+		{
+			return ( _out )?_out:L"";
+		}
+		int length()const{ return _length;}
+	private:
+		wchar_t* _out;
+		int _length;
+	};
+
+
+	class CC2UTF8
+	{
+	public:
+		CC2UTF8(const char* z)
+			:_out(0)
+		{
+			_length=lo_C2Utf8(&_out , z);
+		}
+		~CC2UTF8()
+		{
+			if( _out ) free(_out);
+		}
+		char* c_str() const
+		{
+			return ( _out )?_out:"";
+		}
+		int length()const{ return _length;}
+	private:
+		char* _out;
+		int _length;
+	};
+
+	class CUTF82C
+	{
+	public:
+		CUTF82C(const char* z)
+			:_out(0)
+		{
+			_length=lo_Utf82C(&_out , z);
+		}
+		~CUTF82C()
+		{
+			if( _out ) free(_out);
+		}
+		char* c_str() const
+		{
+			return ( _out )?_out:"";
+		}
+		int length()const{ return _length;}
+	private:
+		char* _out;
+		int _length;
+	};
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif //__LIB_SDK_COMMON_strConv_H__
