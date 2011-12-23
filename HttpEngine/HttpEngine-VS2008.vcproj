@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\Common;.\Interface;..\include;..\include\libutil"
+				AdditionalIncludeDirectories=".\;..\Common;.\Interface;..\include;..\include\libutil"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;HTTPENGINE_EXPORTS;USE_UTIL_DLL"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -120,7 +120,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\Common;.\Interface;..\include;..\include\libutil"
+				AdditionalIncludeDirectories=".\;..\Common;.\Interface;..\include;..\include\libutil"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;HTTPENGINE_EXPORTS;USE_UTIL_DLL"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -198,7 +198,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories=".\Common;.\Interface;..\include;..\include\libutil"
+				AdditionalIncludeDirectories=".\;..\Common;.\Interface;..\include;..\include\libutil"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;HTTPENGINE_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -264,7 +264,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories=".\Common;.\Interface;..\include;..\include\libutil"
+				AdditionalIncludeDirectories=".\;..\Common;.\Interface;..\include;..\include\libutil"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;HTTPENGINE_EXPORTS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -495,27 +495,27 @@
 			Name="Common"
 			>
 			<File
-				RelativePath=".\Common\bbiconv.cc"
+				RelativePath="..\Common\bbiconv.cc"
 				>
 			</File>
 			<File
-				RelativePath=".\Common\bbiconv.h"
+				RelativePath="..\Common\bbiconv.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Common\strconv.cpp"
+				RelativePath="..\Common\strconv.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Common\strconv.h"
+				RelativePath="..\Common\strconv.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Common\Urlcode.cpp"
+				RelativePath="..\Common\Urlcode.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Common\Urlcode.h"
+				RelativePath="..\Common\Urlcode.h"
 				>
 			</File>
 		</Filter>

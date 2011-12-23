@@ -26,7 +26,7 @@
 *
 */
 
-
+#include "stdafx.h"
 #include "Urlcode.h"
 #include "strconv.h"
 #include <stdlib.h>
@@ -110,6 +110,60 @@ extern "C" {
 		return outlen;
 	}
 
+	/** 不过滤一些字符，全部encode */
+	int lo_UrlEncodeAEx(char** pout, const char* pin ,  int len)
+	{
+		//将保留字符转化为16进制格式.
+		// according to RFC 2396
+		char sca[4] = "%";
+		unsigned char c;
+		char* buff = 0 , *pstr = 0;
+		int i = 0 , bufflen = 0;
+
+		if( !pin )
+			return 0;
+
+		if( len <= 0 ){
+			//
+			len = strlen( pin );
+			if( len <= 0 )
+				return 0;
+		}
+		bufflen = (len * 3) + 2;
+
+		buff = (char*)malloc( bufflen );
+		memset(buff , 0 , bufflen );
+		pstr = buff;
+
+		while( *pin != '\0' && i < len )
+		{
+			c = *pin;
+			if( isalpha( c ) || isdigit( c ) )
+			{
+				// found an unreserved character
+				strncat(pstr, pin , 1);
+				pstr++;
+			}
+			else if( c == ' ' )
+			{
+				strcat(pstr , "%20");
+				pstr += 3;
+			}
+			else
+			{
+				sprintf( &(sca[1]) , "%02X", c );
+				sca[3] = '\0';
+				strcat(pstr , sca );
+				pstr += 3;
+			}
+			pin++;
+			i++;
+		}
+		*pstr ='\0';
+		*pout = buff;
+		return (pstr-buff);
+	}
+
 	int lo_UrlEncodeA(char** pout, const char* pin ,  int len)
 	{
 		//将保留字符转化为16进制格式.
@@ -170,6 +224,23 @@ extern "C" {
 		int outlen = 0;
 
 		outlen = lo_UrlEncodeA(&poutA , pin , len);
+		if( outlen )
+		{
+			outlen = lo_C2W(pout , poutA);
+		}
+
+		if( poutA ) free( poutA  );
+
+		return 0;
+	}
+
+	/** 不过滤一些字符，全部encode */
+	int lo_UrlEncodeEx(wchar_t** pout, const char* pin ,  int len)
+	{
+		char* poutA = 0;
+		int outlen = 0;
+
+		outlen = lo_UrlEncodeAEx(&poutA , pin , len);
 		if( outlen )
 		{
 			outlen = lo_C2W(pout , poutA);
