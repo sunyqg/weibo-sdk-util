@@ -44,13 +44,11 @@ extern "C" {
 	** from malloc. please free
 	*/
 	int lo_C2W(wchar_t** pout , const char *zinname);
-
-
 	int lo_W2C(char** pout ,const wchar_t *zWide);
-
 
 	int lo_W2Utf8(char** pout ,const wchar_t *zWide);
 	int lo_Utf82W(wchar_t** pout , const char* utf8 );
+    
 	/*
 	** Convert multibyte character string to UTF-8.  Space to hold the
 	** returned string is obtained from malloc().
@@ -58,24 +56,27 @@ extern "C" {
 	int lo_C2Utf8(char** pout , const char *zinname);
 	int lo_Utf82C(char** pout , const char *zstr);
 
-
 	class CC2W
 	{
 	public:
 		CC2W(const char* z)
 			:_out(0)
 		{
-			_length = lo_C2W(&_out , z);
+			_length = lo_C2W(&_out , const_cast<char*>(z));
 		}
+        
 		~CC2W()
 		{
 			if( _out ) free(_out);
 		}
+        
 		wchar_t* c_str() const
 		{
-			return ( _out )?_out:L"";
+			return (_out) ? _out : const_cast<wchar_t*>(L"");
 		}
+        
 		int length()const{ return _length;}
+        
 	private:
 		wchar_t* _out;
 		int _length;
@@ -88,16 +89,19 @@ extern "C" {
 		CW2C(const wchar_t* z)
 			:_out(0)
 		{
-			_length=lo_W2C(&_out , z);
+			_length=lo_W2C(&_out, const_cast<wchar_t*>(z));
 		}
+        
 		~CW2C()
 		{
 			if( _out ) free(_out);
 		}
+        
 		char* c_str() const
 		{
-			return ( _out )?_out:"";
+			return (_out)?_out:const_cast<char*>("");
 		}
+        
 		int length()const{ return _length;}
 	private:
 		char* _out;
@@ -111,17 +115,21 @@ extern "C" {
 		CW2UTF8(const wchar_t* z)
 			:_out(0)
 		{
-			_length=lo_W2Utf8(&_out , z);
+			_length = lo_W2Utf8(&_out, const_cast<wchar_t*>(z));
 		}
+        
 		~CW2UTF8()
 		{
-			if( _out ) free(_out);
+			if(_out) free(_out);
 		}
+        
 		char* c_str() const
 		{
-			return ( _out )?_out:"";
+			return (_out)? _out : const_cast<char*>("");
 		}
+        
 		int length()const{ return _length;}
+        
 	private:
 		char* _out;
 		int _length;
@@ -133,17 +141,21 @@ extern "C" {
 		CUTF82W(const char* z)
 			:_out(0)
 		{
-			_length=lo_Utf82W(&_out , z);
+			_length=lo_Utf82W(&_out, const_cast<char*>(z));
 		}
+        
 		~CUTF82W()
 		{
 			if( _out ) free(_out);
 		}
+        
 		wchar_t* c_str() const
 		{
-			return ( _out )?_out:L"";
+			return (_out) ? _out : const_cast<wchar_t*>(L"");
 		}
+        
 		int length()const{ return _length;}
+        
 	private:
 		wchar_t* _out;
 		int _length;
@@ -158,15 +170,19 @@ extern "C" {
 		{
 			_length=lo_C2Utf8(&_out , z);
 		}
+        
 		~CC2UTF8()
 		{
 			if( _out ) free(_out);
 		}
+        
 		char* c_str() const
 		{
-			return ( _out )?_out:"";
+			return ( _out )? _out : const_cast<char*>("");
 		}
+        
 		int length()const{ return _length;}
+        
 	private:
 		char* _out;
 		int _length;
@@ -178,17 +194,21 @@ extern "C" {
 		CUTF82C(const char* z)
 			:_out(0)
 		{
-			_length=lo_Utf82C(&_out , z);
+			_length=lo_Utf82C(&_out, z);
 		}
+        
 		~CUTF82C()
 		{
 			if( _out ) free(_out);
 		}
+        
 		char* c_str() const
 		{
-			return ( _out )?_out:"";
+			return (_out) ? _out : const_cast<char*>("");
 		}
+        
 		int length()const{ return _length;}
+        
 	private:
 		char* _out;
 		int _length;
