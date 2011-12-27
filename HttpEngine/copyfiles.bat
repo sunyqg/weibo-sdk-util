@@ -1,1 +1,1 @@
-copy "Interface\*.*" "..\include\HttpEngine"
+copy "include\*.*" "..\include\HttpEngine"
