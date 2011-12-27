@@ -5,7 +5,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include "UrlCode.h"
+#include <Urlcode.h>
 
 #include "HEEngineImpl.hxx"
 
@@ -624,7 +624,7 @@ void HESessionInfo::buildHeaderList(bool bRequestHeader, curl_slist** ppchunk)
 	while (it != headermap.end())
 	{
 		char cc[1024] = {0};
-		sprintf(cc,"%s:%s",it->first,it->second);
+		sprintf(cc,"%s:%s",it->first.c_str(), it->second.c_str());
 		curl_slist_append(*ppchunk, cc);
 		++ it;
 	}

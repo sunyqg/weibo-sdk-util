@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "HashHelper.hxx"
 #include <cstring>
+#include <wchar.h>
 
 long HashHelper::HashCode(const char* str)
 {
