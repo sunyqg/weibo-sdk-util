@@ -110,10 +110,10 @@ void Log::formatPattern(Log::Level level,
 		formatMsg += " ";
 
 		//add thread id
-# if !defined(HAVE_LIBPTHREAD)
+# if !defined(HAVE_LIBPTHREAD) && defined(_WIN32)
 		DWORD dwThreadid = GetCurrentThreadId();
 # else
-		void* dwThreadid = pthread_self().p;
+		void* dwThreadid = 0;//pthread_self().p;
 # endif
 		ostringstream stm2;
 		stm2 << "[THREADID:" << dwThreadid << "]";
