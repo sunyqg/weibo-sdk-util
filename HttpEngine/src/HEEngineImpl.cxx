@@ -143,7 +143,7 @@ int HEEngineImpl::setOption(OptType optType, void* data, unsigned int dataSize, 
 			{
 				return HE_GENERAL_ERROR;
 			}
-			mMaxRunning = reinterpret_cast<unsigned int>(data);
+			mMaxRunning = reinterpret_cast<long long>(data);
 		}
 		break;
 
@@ -169,10 +169,7 @@ void* HEEngineImpl::getOption(OptType optType, unsigned int dataSize)
 
 	case EOT_MAXCOUNT:
 		{
-			if (dataSize == sizeof(unsigned int))
-			{
-				return (void*)mMaxRunning;
-			}
+            return (void*)mMaxRunning;
 		}
 		break;
 
@@ -195,7 +192,7 @@ int HEEngineImpl::setRequestOption(const int requestId, const RequestOptionType 
 		return ret;
 	}
 
-	va_list arg = NULL;
+	va_list arg;
 	va_start(arg, type);
 
 	switch(type)

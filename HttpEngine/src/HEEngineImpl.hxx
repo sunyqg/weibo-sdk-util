@@ -44,7 +44,7 @@ namespace httpengine
 		virtual const RequestDetailsPtr internalGetHttpRequestById(unsigned int requestId);
 
 	private:
-		unsigned int mMaxRunning;
+		long long mMaxRunning;
 		boost::shared_ptr<HEDriver> mHttpDriver;
 		ProxyInfo mProxyInfo;
 	};
