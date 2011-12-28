@@ -15,7 +15,6 @@
 
 
 
-
 pkgdatadir = $(datadir)/libutil
 pkglibdir = $(libdir)/libutil
 pkgincludedir = $(includedir)/libutil
@@ -34,10 +33,9 @@ POST_UNINSTALL = :
 build_triplet = i386-apple-darwin11.2.0
 host_triplet = i386-apple-darwin11.2.0
 subdir = .
-DIST_COMMON = $(am__configure_deps) $(libutilinclude_HEADERS) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/configure config.guess config.sub depcomp \
-	install-sh ltmain.sh missing
+DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(top_srcdir)/configure config.guess \
+	config.sub depcomp install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -52,8 +50,7 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(libdir)" \
-	"$(DESTDIR)$(libutilincludedir)"
+am__installdirs = "$(DESTDIR)$(libdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libutil_la_LIBADD =
@@ -79,8 +76,6 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libutil_la_SOURCES)
 DIST_SOURCES = $(libutil_la_SOURCES)
-libutilincludeHEADERS_INSTALL = $(INSTALL_HEADER)
-HEADERS = $(libutilinclude_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -150,6 +145,7 @@ PACKAGE_STRING = libutil 1.00
 PACKAGE_TARNAME = libutil
 PACKAGE_VERSION = 1.00
 PATH_SEPARATOR = :
+PLATFORM_NAME = Darwin
 RANLIB = ranlib
 SED = /usr/bin/sed
 SET_MAKE = 
@@ -190,8 +186,8 @@ includedir = ${prefix}/include
 infodir = ${datarootdir}/info
 install_sh = $(SHELL) /Users/Welbon/Desktop/weiboSDK/weibosdk/weibo-sdk-util/trunk/libutil/install-sh
 
-# This is the destnation library  directory of install
-libdir = $(prefix)/lib/Unix
+# This is the destnation library directory of install
+libdir = $(prefix)/lib/$(PLATFORM_NAME)
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
@@ -245,39 +241,6 @@ libutil_la_SOURCES = $(cpp_sources)
 
 # This is the destnation include directory of install
 libutilincludedir = $(includedir)/libutil/util
-libutildir = $(prefix)
-libutilinclude_HEADERS = \
-	$(INCLUDEDIR)/common/AbstractFifo.hxx\
-        $(INCLUDEDIR)/common/Fifo.hxx\
-        $(INCLUDEDIR)/common/StlUtil.hxx\
-        $(INCLUDEDIR)/common/StringUtil.hxx\
-        $(INCLUDEDIR)/common/TimeUtil.hxx\
-        $(INCLUDEDIR)/compat.hxx\
-        $(INCLUDEDIR)/delegate/delegate.hxx\
-        $(INCLUDEDIR)/delegate/internal/delegateTemplate.hxx\
-        $(INCLUDEDIR)/fsm/AddMachineEvent.hxx\
-        $(INCLUDEDIR)/fsm/Event.hxx\
-        $(INCLUDEDIR)/fsm/Machine.hxx\
-        $(INCLUDEDIR)/fsm/MachineSet.hxx\
-        $(INCLUDEDIR)/fsm/MachineSetHandler.hxx\
-	$(INCLUDEDIR)/fsm/MachineType.hxx\
-	$(INCLUDEDIR)/fsm/State.hxx\
-	$(INCLUDEDIR)/fsm/TimeoutEvent.hxx\
-        $(INCLUDEDIR)/fsm/TimeoutPredicate.hxx\
-        $(INCLUDEDIR)/fsm/Transition.hxx\
-        $(INCLUDEDIR)/fsm/TransitionPredicate.hxx\
-        $(INCLUDEDIR)/log/ExternalLogger.hxx\
-        $(INCLUDEDIR)/log/Log.hxx\
-        $(INCLUDEDIR)/log/Logger.hxx\
-        $(INCLUDEDIR)/log/Subsystem.hxx\
-        $(INCLUDEDIR)/policy/thread_policy.hxx\
-        $(INCLUDEDIR)/threading/Condition.hxx\
-        $(INCLUDEDIR)/threading/Lock.hxx\
-        $(INCLUDEDIR)/threading/Mutex.hxx\
-        $(INCLUDEDIR)/threading/RWMutex.hxx\
-        $(INCLUDEDIR)/threading/ThreadedData.hxx\
-        $(INCLUDEDIR)/threading/ThreadIf.hxx
-
 AM_CXXFLAGS = -D_LINUX -DONLY_EPOLL -D_SERVER -pthread
 all: all-am
 
@@ -566,23 +529,6 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
-install-libutilincludeHEADERS: $(libutilinclude_HEADERS)
-	@$(NORMAL_INSTALL)
-	test -z "$(libutilincludedir)" || $(MKDIR_P) "$(DESTDIR)$(libutilincludedir)"
-	@list='$(libutilinclude_HEADERS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(libutilincludeHEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(libutilincludedir)/$$f'"; \
-	  $(libutilincludeHEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(libutilincludedir)/$$f"; \
-	done
-
-uninstall-libutilincludeHEADERS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(libutilinclude_HEADERS)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(libutilincludedir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(libutilincludedir)/$$f"; \
-	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -759,9 +705,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libutilincludedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -810,7 +756,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-libutilincludeHEADERS
+install-data-am:
 
 install-dvi: install-dvi-am
 
@@ -848,7 +794,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libLTLIBRARIES uninstall-libutilincludeHEADERS
+uninstall-am: uninstall-libLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -861,15 +807,57 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-libutilincludeHEADERS
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-libutilincludeHEADERS \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-libutilincludeHEADERS
+	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-libLTLIBRARIES
 
+
+# libutilinclude_HEADERS= \
+#	$(INCLUDEDIR)/common/AbstractFifo.hxx\
+#        $(INCLUDEDIR)/common/Fifo.hxx\
+#        $(INCLUDEDIR)/common/StlUtil.hxx\
+#        $(INCLUDEDIR)/common/StringUtil.hxx\
+#        $(INCLUDEDIR)/common/TimeUtil.hxx\
+#        $(INCLUDEDIR)/compat.hxx\
+#        $(INCLUDEDIR)/delegate/delegate.hxx\
+#        $(INCLUDEDIR)/delegate/internal/delegateTemplate.hxx\
+#        $(INCLUDEDIR)/fsm/AddMachineEvent.hxx\
+#        $(INCLUDEDIR)/fsm/Event.hxx\
+#        $(INCLUDEDIR)/fsm/Machine.hxx\
+#        $(INCLUDEDIR)/fsm/MachineSet.hxx\
+#        $(INCLUDEDIR)/fsm/MachineSetHandler.hxx\
+#	$(INCLUDEDIR)/fsm/MachineType.hxx\
+#	$(INCLUDEDIR)/fsm/State.hxx\
+#	$(INCLUDEDIR)/fsm/TimeoutEvent.hxx\
+#        $(INCLUDEDIR)/fsm/TimeoutPredicate.hxx\
+#        $(INCLUDEDIR)/fsm/Transition.hxx\
+#        $(INCLUDEDIR)/fsm/TransitionPredicate.hxx\
+#        $(INCLUDEDIR)/log/ExternalLogger.hxx\
+#        $(INCLUDEDIR)/log/Log.hxx\
+#        $(INCLUDEDIR)/log/Logger.hxx\
+#        $(INCLUDEDIR)/log/Subsystem.hxx\
+#        $(INCLUDEDIR)/policy/thread_policy.hxx\
+#        $(INCLUDEDIR)/threading/Condition.hxx\
+#        $(INCLUDEDIR)/threading/Lock.hxx\
+#        $(INCLUDEDIR)/threading/Mutex.hxx\
+#        $(INCLUDEDIR)/threading/RWMutex.hxx\
+#        $(INCLUDEDIR)/threading/ThreadedData.hxx\
+#        $(INCLUDEDIR)/threading/ThreadIf.hxx
+
+install-header:
+	cp -dpR $(INCLUDEDIR)/Common $(includedir)/Common
+	echo "xxxxxxxxxxxxxxxxxxxx"
+        # cp -dpR $(top_srcdir)/src/msvc6 $(distdir)/src
+        # cp -dpR $(top_srcdir)/src/qttestrunner $(distdir)/src
+        # cp -dpR $(top_srcdir)/include/msvc6 $(distdir)/include
+        # cp -dpR $(top_srcdir)/examples/msvc6 $(distdir)/examples
+        # cp -dpR $(top_srcdir)/examples/qt $(distdir)/examples
+        # test -d $(distdir)/lib || mkdir $(distdir)/lib
+
+.PHONY: install-header
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -38,8 +38,8 @@ libutil_la_SOURCES = $(cpp_sources)
 # This is the destnation include directory of install
 libutilincludedir = $(includedir)/libutil/util
 
-# This is the destnation library  directory of install
-libdir = $(prefix)/lib/Unix
+# This is the destnation library directory of install
+libdir = $(prefix)/lib/$(PLATFORM_NAME)
 
 libutilinclude_HEADERS= \
 	$(INCLUDEDIR)/common/AbstractFifo.hxx\
@@ -72,5 +72,17 @@ libutilinclude_HEADERS= \
         $(INCLUDEDIR)/threading/RWMutex.hxx\
         $(INCLUDEDIR)/threading/ThreadedData.hxx\
         $(INCLUDEDIR)/threading/ThreadIf.hxx
+
+
+#.PHONY:
+	# echo "xxxxxxxxxxxxxxxxxxxx"
+	# cp -dpR $(INCLUDEDIR)/Common $(includedir)/Common
+	# echo "xxxxxxxxxxxxxxxxxxxx"
+        # cp -dpR $(top_srcdir)/src/msvc6 $(distdir)/src
+        # cp -dpR $(top_srcdir)/src/qttestrunner $(distdir)/src
+        # cp -dpR $(top_srcdir)/include/msvc6 $(distdir)/include
+        # cp -dpR $(top_srcdir)/examples/msvc6 $(distdir)/examples
+        # cp -dpR $(top_srcdir)/examples/qt $(distdir)/examples
+        # test -d $(distdir)/lib || mkdir $(distdir)/lib
 
 AM_CXXFLAGS=-D_LINUX -DONLY_EPOLL -D_SERVER -pthread
