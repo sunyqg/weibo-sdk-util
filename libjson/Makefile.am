@@ -22,7 +22,7 @@ libjson_a_SOURCES = $(h_sources) $(cpp_sources)
 libjsonincludedir=$(prefix)/include/json
 
 # Library directory of install
-libdir=$(prefix)/lib/Unix
+libdir=$(prefix)/lib/$(PLATFORM_NAME)
 
 # Install header file
 libjsoninclude_HEADERS = \

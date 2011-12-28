@@ -158,6 +158,7 @@ PACKAGE_STRING = libjson 1.0
 PACKAGE_TARNAME = libjson
 PACKAGE_VERSION = 1.0
 PATH_SEPARATOR = :
+PLATFORM_NAME = Darwin
 RANLIB = ranlib
 SED = /usr/bin/sed
 SET_MAKE = 
@@ -199,7 +200,7 @@ infodir = ${datarootdir}/info
 install_sh = $(SHELL) /Users/Welbon/Desktop/weiboSDK/weibosdk/weibo-sdk-util/trunk/libjson/install-sh
 
 # Library directory of install
-libdir = $(prefix)/lib/Unix
+libdir = $(prefix)/lib/$(PLATFORM_NAME)
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
