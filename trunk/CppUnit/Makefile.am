@@ -3,6 +3,7 @@ ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = src include examples doc
 
+libdir = $(prefix)/lib/$(LT_PLATFORM_KEY)
 pkgconfigdatadir = $(libdir)/pkgconfig
 
 pkgconfigdata_DATA = cppunit.pc

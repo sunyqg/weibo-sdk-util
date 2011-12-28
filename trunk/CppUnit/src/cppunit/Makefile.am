@@ -2,6 +2,9 @@
 # $Id: Makefile.am,v 1.44 2005-06-14 21:28:46 blep Exp $
 #
 
+# Reset the lib dir, added by welbon, sina, china. 2011-12-28
+libdir = $(prefix)/lib/$(LT_PLATFORM_KEY)
+
 EXTRA_DIST = cppunit.dsp cppunit_dll.dsp DllMain.cpp
 INCLUDES = -I$(top_builddir)/include -I$(top_srcdir)/include
 
