@@ -147,6 +147,7 @@ PACKAGE_STRING = libHttpEngine 1.00
 PACKAGE_TARNAME = libhttpengine
 PACKAGE_VERSION = 1.00
 PATH_SEPARATOR = :
+PLATFORM_NAME = Darwin
 RANLIB = ranlib
 SED = /usr/bin/sed
 SET_MAKE = 
@@ -188,7 +189,7 @@ infodir = ${datarootdir}/info
 install_sh = $(SHELL) /Users/Welbon/Desktop/weiboSDK/weibosdk/weibo-sdk-util/trunk/HttpEngine/install-sh
 
 # This is the destnation library  directory of install
-libdir = $(prefix)/lib/Unix
+libdir = $(prefix)/lib/$(PLATFORM_NAME)
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var

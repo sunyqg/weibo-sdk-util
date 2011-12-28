@@ -29,7 +29,7 @@ libHttpEngine_la_SOURCES = $(cpp_sources)
 libHttpEngineincludedir = $(includedir)/HttpEngine
 
 # This is the destnation library  directory of install
-libdir = $(prefix)/lib/Unix
+libdir = $(prefix)/lib/$(PLATFORM_NAME)
 
 libHttpEngineinclude_HEADERS= \
         $(INCLUDEDIR)/HttpCompat.hxx\

@@ -6,6 +6,9 @@ AC_INIT(libHttpEngine, 1.00, libo.weng@gmail.com)
 #AC_CONFIG_SRCDIR([config.h])
 #AC_CONFIG_HEADER([config.h])
 
+AC_SUBST([PLATFORM_NAME])
+PLATFORM_NAME=$(uname)
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
