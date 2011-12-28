@@ -6,6 +6,9 @@ AC_INIT(libjson, 1.0, libo.weng@gmail.com)
 # AC_CONFIG_SRCDIR([include/config.h.in])
 # AC_CONFIG_HEADER([config.h])
 
+AC_SUBST([PLATFORM_NAME])
+PLATFORM_NAME=$(uname)
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC
