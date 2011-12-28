@@ -14,6 +14,9 @@ AM_INIT_AUTOMAKE
 AC_PROG_RANLIB
 AC_PROG_LIBTOOL
 
+AC_SUBST([PLATFORM_NAME])
+PLATFORM_NAME=$(uname)
+
 # Checks for libraries.
 
 # Checks for header files.
