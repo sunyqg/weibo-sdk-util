@@ -1,7 +1,7 @@
 # Set the automake options.while execute the automake command, use this option.
 AUTOMAKE_OPTIONS=foreign
 
-lib_LIBRARIES = libjson.a
+lib_LTLIBRARIES = libjson.la
 
 SOURCEDIR=$(top_srcdir)/src
 INCLUDEDIR=$(top_srcdir)/include/json
@@ -16,7 +16,7 @@ cpp_sources = \
 
 INCLUDES = -I$(top_srcdir)/include
 
-libjson_a_SOURCES = $(h_sources) $(cpp_sources)
+libjson_la_SOURCES = $(h_sources) $(cpp_sources)
 
 # Include directory of install
 libjsonincludedir=$(prefix)/include/json
