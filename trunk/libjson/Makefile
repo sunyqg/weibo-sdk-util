@@ -54,16 +54,13 @@ am__vpath_adj = case $$p in \
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" \
 	"$(DESTDIR)$(libjsonincludedir)"
-libLIBRARIES_INSTALL = $(INSTALL_DATA)
-LIBRARIES = $(lib_LIBRARIES)
-ARFLAGS = cru
-libjson_a_AR = $(AR) $(ARFLAGS)
-libjson_a_LIBADD =
+libLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(lib_LTLIBRARIES)
+libjson_la_LIBADD =
 am__objects_1 =
-am__objects_2 = json_reader.$(OBJEXT) json_writer.$(OBJEXT) \
-	json_value.$(OBJEXT)
-am_libjson_a_OBJECTS = $(am__objects_1) $(am__objects_2)
-libjson_a_OBJECTS = $(am_libjson_a_OBJECTS)
+am__objects_2 = json_reader.lo json_writer.lo json_value.lo
+am_libjson_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+libjson_la_OBJECTS = $(am_libjson_la_OBJECTS)
 DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -85,8 +82,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libjson_a_SOURCES)
-DIST_SOURCES = $(libjson_a_SOURCES)
+SOURCES = $(libjson_la_SOURCES)
+DIST_SOURCES = $(libjson_la_SOURCES)
 libjsonincludeHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(libjsoninclude_HEADERS)
 ETAGS = etags
@@ -221,7 +218,7 @@ top_srcdir = .
 
 # Set the automake options.while execute the automake command, use this option.
 AUTOMAKE_OPTIONS = foreign
-lib_LIBRARIES = libjson.a
+lib_LTLIBRARIES = libjson.la
 SOURCEDIR = $(top_srcdir)/src
 INCLUDEDIR = $(top_srcdir)/include/json
 h_sources = \
@@ -233,7 +230,7 @@ cpp_sources = \
 	$(SOURCEDIR)/json_value.cpp
 
 INCLUDES = -I$(top_srcdir)/include
-libjson_a_SOURCES = $(h_sources) $(cpp_sources)
+libjson_la_SOURCES = $(h_sources) $(cpp_sources)
 
 # Include directory of install
 libjsonincludedir = $(prefix)/include/json
@@ -286,39 +283,35 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-install-libLIBRARIES: $(lib_LIBRARIES)
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(libdir)" || $(MKDIR_P) "$(DESTDIR)$(libdir)"
-	@list='$(lib_LIBRARIES)'; for p in $$list; do \
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
 	    f=$(am__strip_dir) \
-	    echo " $(libLIBRARIES_INSTALL) '$$p' '$(DESTDIR)$(libdir)/$$f'"; \
-	    $(libLIBRARIES_INSTALL) "$$p" "$(DESTDIR)$(libdir)/$$f"; \
-	  else :; fi; \
-	done
-	@$(POST_INSTALL)
-	@list='$(lib_LIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    p=$(am__strip_dir) \
-	    echo " $(RANLIB) '$(DESTDIR)$(libdir)/$$p'"; \
-	    $(RANLIB) "$(DESTDIR)$(libdir)/$$p"; \
+	    echo " $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(libdir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(libdir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-libLIBRARIES:
+uninstall-libLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(lib_LIBRARIES)'; for p in $$list; do \
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
 	  p=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(libdir)/$$p'"; \
-	  rm -f "$(DESTDIR)$(libdir)/$$p"; \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$p"; \
 	done
 
-clean-libLIBRARIES:
-	-test -z "$(lib_LIBRARIES)" || rm -f $(lib_LIBRARIES)
-libjson.a: $(libjson_a_OBJECTS) $(libjson_a_DEPENDENCIES) 
-	-rm -f libjson.a
-	$(libjson_a_AR) libjson.a $(libjson_a_OBJECTS) $(libjson_a_LIBADD)
-	$(RANLIB) libjson.a
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+libjson.la: $(libjson_la_OBJECTS) $(libjson_la_DEPENDENCIES) 
+	$(CXXLINK) -rpath $(libdir) $(libjson_la_OBJECTS) $(libjson_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -326,9 +319,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/json_reader.Po
-include ./$(DEPDIR)/json_value.Po
-include ./$(DEPDIR)/json_writer.Po
+include ./$(DEPDIR)/json_reader.Plo
+include ./$(DEPDIR)/json_value.Plo
+include ./$(DEPDIR)/json_writer.Plo
 
 .cpp.o:
 	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -351,47 +344,26 @@ include ./$(DEPDIR)/json_writer.Po
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(LTCXXCOMPILE) -c -o $@ $<
 
-json_reader.o: $(SOURCEDIR)/json_reader.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_reader.o -MD -MP -MF $(DEPDIR)/json_reader.Tpo -c -o json_reader.o `test -f '$(SOURCEDIR)/json_reader.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_reader.cpp
-	mv -f $(DEPDIR)/json_reader.Tpo $(DEPDIR)/json_reader.Po
-#	source='$(SOURCEDIR)/json_reader.cpp' object='json_reader.o' libtool=no \
+json_reader.lo: $(SOURCEDIR)/json_reader.cpp
+	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_reader.lo -MD -MP -MF $(DEPDIR)/json_reader.Tpo -c -o json_reader.lo `test -f '$(SOURCEDIR)/json_reader.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_reader.cpp
+	mv -f $(DEPDIR)/json_reader.Tpo $(DEPDIR)/json_reader.Plo
+#	source='$(SOURCEDIR)/json_reader.cpp' object='json_reader.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_reader.o `test -f '$(SOURCEDIR)/json_reader.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_reader.cpp
+#	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_reader.lo `test -f '$(SOURCEDIR)/json_reader.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_reader.cpp
 
-json_reader.obj: $(SOURCEDIR)/json_reader.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_reader.obj -MD -MP -MF $(DEPDIR)/json_reader.Tpo -c -o json_reader.obj `if test -f '$(SOURCEDIR)/json_reader.cpp'; then $(CYGPATH_W) '$(SOURCEDIR)/json_reader.cpp'; else $(CYGPATH_W) '$(srcdir)/$(SOURCEDIR)/json_reader.cpp'; fi`
-	mv -f $(DEPDIR)/json_reader.Tpo $(DEPDIR)/json_reader.Po
-#	source='$(SOURCEDIR)/json_reader.cpp' object='json_reader.obj' libtool=no \
+json_writer.lo: $(SOURCEDIR)/json_writer.cpp
+	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_writer.lo -MD -MP -MF $(DEPDIR)/json_writer.Tpo -c -o json_writer.lo `test -f '$(SOURCEDIR)/json_writer.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_writer.cpp
+	mv -f $(DEPDIR)/json_writer.Tpo $(DEPDIR)/json_writer.Plo
+#	source='$(SOURCEDIR)/json_writer.cpp' object='json_writer.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_reader.obj `if test -f '$(SOURCEDIR)/json_reader.cpp'; then $(CYGPATH_W) '$(SOURCEDIR)/json_reader.cpp'; else $(CYGPATH_W) '$(srcdir)/$(SOURCEDIR)/json_reader.cpp'; fi`
+#	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_writer.lo `test -f '$(SOURCEDIR)/json_writer.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_writer.cpp
 
-json_writer.o: $(SOURCEDIR)/json_writer.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_writer.o -MD -MP -MF $(DEPDIR)/json_writer.Tpo -c -o json_writer.o `test -f '$(SOURCEDIR)/json_writer.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_writer.cpp
-	mv -f $(DEPDIR)/json_writer.Tpo $(DEPDIR)/json_writer.Po
-#	source='$(SOURCEDIR)/json_writer.cpp' object='json_writer.o' libtool=no \
+json_value.lo: $(SOURCEDIR)/json_value.cpp
+	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_value.lo -MD -MP -MF $(DEPDIR)/json_value.Tpo -c -o json_value.lo `test -f '$(SOURCEDIR)/json_value.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_value.cpp
+	mv -f $(DEPDIR)/json_value.Tpo $(DEPDIR)/json_value.Plo
+#	source='$(SOURCEDIR)/json_value.cpp' object='json_value.lo' libtool=yes \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_writer.o `test -f '$(SOURCEDIR)/json_writer.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_writer.cpp
-
-json_writer.obj: $(SOURCEDIR)/json_writer.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_writer.obj -MD -MP -MF $(DEPDIR)/json_writer.Tpo -c -o json_writer.obj `if test -f '$(SOURCEDIR)/json_writer.cpp'; then $(CYGPATH_W) '$(SOURCEDIR)/json_writer.cpp'; else $(CYGPATH_W) '$(srcdir)/$(SOURCEDIR)/json_writer.cpp'; fi`
-	mv -f $(DEPDIR)/json_writer.Tpo $(DEPDIR)/json_writer.Po
-#	source='$(SOURCEDIR)/json_writer.cpp' object='json_writer.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_writer.obj `if test -f '$(SOURCEDIR)/json_writer.cpp'; then $(CYGPATH_W) '$(SOURCEDIR)/json_writer.cpp'; else $(CYGPATH_W) '$(srcdir)/$(SOURCEDIR)/json_writer.cpp'; fi`
-
-json_value.o: $(SOURCEDIR)/json_value.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_value.o -MD -MP -MF $(DEPDIR)/json_value.Tpo -c -o json_value.o `test -f '$(SOURCEDIR)/json_value.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_value.cpp
-	mv -f $(DEPDIR)/json_value.Tpo $(DEPDIR)/json_value.Po
-#	source='$(SOURCEDIR)/json_value.cpp' object='json_value.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_value.o `test -f '$(SOURCEDIR)/json_value.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_value.cpp
-
-json_value.obj: $(SOURCEDIR)/json_value.cpp
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT json_value.obj -MD -MP -MF $(DEPDIR)/json_value.Tpo -c -o json_value.obj `if test -f '$(SOURCEDIR)/json_value.cpp'; then $(CYGPATH_W) '$(SOURCEDIR)/json_value.cpp'; else $(CYGPATH_W) '$(srcdir)/$(SOURCEDIR)/json_value.cpp'; fi`
-	mv -f $(DEPDIR)/json_value.Tpo $(DEPDIR)/json_value.Po
-#	source='$(SOURCEDIR)/json_value.cpp' object='json_value.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_value.obj `if test -f '$(SOURCEDIR)/json_value.cpp'; then $(CYGPATH_W) '$(SOURCEDIR)/json_value.cpp'; else $(CYGPATH_W) '$(srcdir)/$(SOURCEDIR)/json_value.cpp'; fi`
+#	$(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o json_value.lo `test -f '$(SOURCEDIR)/json_value.cpp' || echo '$(srcdir)/'`$(SOURCEDIR)/json_value.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -594,7 +566,7 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(LIBRARIES) $(HEADERS)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libjsonincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -625,7 +597,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libLIBRARIES clean-libtool \
+clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -649,7 +621,7 @@ install-data-am: install-libjsonincludeHEADERS
 
 install-dvi: install-dvi-am
 
-install-exec-am: install-libLIBRARIES
+install-exec-am: install-libLTLIBRARIES
 
 install-html: install-html-am
 
@@ -683,12 +655,12 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libLIBRARIES uninstall-libjsonincludeHEADERS
+uninstall-am: uninstall-libLTLIBRARIES uninstall-libjsonincludeHEADERS
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
-	clean-generic clean-libLIBRARIES clean-libtool ctags dist \
+	clean-generic clean-libLTLIBRARIES clean-libtool ctags dist \
 	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
 	distcheck distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distcleancheck distdir \
@@ -696,13 +668,14 @@ uninstall-am: uninstall-libLIBRARIES uninstall-libjsonincludeHEADERS
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am \
-	install-libLIBRARIES install-libjsonincludeHEADERS install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-libLIBRARIES uninstall-libjsonincludeHEADERS
+	install-libLTLIBRARIES install-libjsonincludeHEADERS \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-libLTLIBRARIES \
+	uninstall-libjsonincludeHEADERS
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
