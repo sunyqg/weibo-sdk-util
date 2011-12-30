@@ -4,7 +4,13 @@
 
 aclocal
 
-libtoolize -f -c
+for l in libtoolize glibtoolize;
+do
+ ($l --version) < /dev/null > /dev/null 2>&1 && {
+ LIBTOOLIZE=$l
+ break
+ }
+done
 
 $LIBTOOLIZE -f -c
 
