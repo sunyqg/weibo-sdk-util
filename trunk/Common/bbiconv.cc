@@ -5,8 +5,10 @@
 
 
 #include <iconv.h>
-#include <string>
+#include <string.h>
+#ifdef __MAC_OS__
 #include <malloc/malloc.h>
+#endif
 /**
 * 对其 iconv 库进行封装
 * 
