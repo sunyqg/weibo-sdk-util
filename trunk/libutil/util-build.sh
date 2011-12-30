@@ -6,6 +6,8 @@ aclocal
 
 libtoolize -f -c
 
+$LIBTOOLIZE -f -c
+
 autoconf
 
 automake --add-missing
