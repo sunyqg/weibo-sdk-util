@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.59)
 AC_INIT(libjson, 1.0, libo.weng@gmail.com)
 # AC_CONFIG_SRCDIR([include/config.h.in])
 # AC_CONFIG_HEADER([config.h])

@@ -4,7 +4,7 @@
 
 aclocal
 
-glibtoolize -f -c
+libtoolize -f -c
 
 autoconf
 

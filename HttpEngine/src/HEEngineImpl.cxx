@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <stdarg.h>
 #include "config.h"
 #include "HEEngineImpl.hxx"
 #include "HESessionInfo.hxx"

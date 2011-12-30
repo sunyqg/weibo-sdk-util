@@ -1,7 +1,10 @@
 #include "config.h"
 #include "HESessionInfo.hxx"
 #include <curl/curl.h>
+#include <stdarg.h>
+#if 0
 #include <boost/filesystem.hpp>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

@@ -20,3 +20,4 @@ autoheader
 automake --add-missing
 autoconf
 ./configure --disable-shared --prefix=$(pwd)/..
+make install
