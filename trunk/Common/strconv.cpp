@@ -28,6 +28,7 @@
 
 #include "stdafx.h"
 #include <stdio.h>
+#include <string.h>
 #include "strconv.h"
 
 #if (defined(WIN32) || defined(_WIN32) )

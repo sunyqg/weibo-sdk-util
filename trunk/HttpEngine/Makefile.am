@@ -21,7 +21,9 @@ INCLUDES = \
 	-I$(top_srcdir)/../Common\
 	-I$(top_srcdir)/include\
 	-I$(top_srcdir)/../include/libutil\
-	-I/opt/local/include
+	-I$(top_srcdir)/../include
+
+#-I/opt/local/include
 
 libHttpEngine_la_SOURCES = $(cpp_sources)
 
