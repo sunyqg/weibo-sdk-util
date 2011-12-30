@@ -5,6 +5,7 @@
 #include <ctime>
 #include <vector>
 #include <cstring>
+#include <stdio.h>
 
 #include <boost/config.hpp>
 
@@ -22,6 +23,10 @@
 #include <util/threading/Lock.hxx>
 #include <util/common/StlUtil.hxx>
 #include <util/compat.hxx>
+
+#if !defined(_WIN32)
+#include <linux/limits.h>
+#endif //
 
 using namespace Util;
 
