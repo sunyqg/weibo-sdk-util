@@ -196,6 +196,7 @@ void OnDelegateRequestStartedNotify(unsigned int requestId, const int errorCode,
 			fclose(file);
 		}
 	}
+	gEngine->setRequestOption(requestId, httpengine::TOT_CUSTOM_HEADER, "TestHeaderKey:", "TestHeaderValue", NULL);
 }
 
 void OnDelegateRequestErroredNotify(unsigned int requestId, const int errorCode, const int errorSubCode, void* userData)
@@ -268,7 +269,6 @@ void test_upload(httpengine::HttpEnginePtr engine, int &outId)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-
 #if defined(LOG_SUPPORT)
 	Util::Log::initialize(Util::Log::File | Util::Log::VSDebugWindow, 
 		Util::Log::Debug, "TestHttpEngine", L"C:\\httpengine.log");

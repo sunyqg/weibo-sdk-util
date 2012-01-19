@@ -35,10 +35,11 @@ namespace httpengine
 	/** Request option type */
 	enum RequestOptionType
 	{
-		TOT_POST_FORM,       // reference PostFormType
-		TOT_POST_POSTFIELDS, // fields
+		TOT_POST_FORM,       // Reference PostFormType
+		TOT_POST_POSTFIELDS, // Fields
 		TOT_PROGRESS_FREQUENCE, // int , for progressing notify.
-		TOT_TOTAL_SIZE, // total size, called by getRequestOptionType at complated notify.
+		TOT_TOTAL_SIZE, // Total size, called by getRequestOptionType at complated notify.
+		TOT_CUSTOM_HEADER, // Custom request header.
 	};
 
 	/** Http form, for post method,use setRequestOption. */

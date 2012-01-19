@@ -35,9 +35,10 @@ namespace httpengine
 		void start();
 		void stop();
 
-		void apppendRequestHeader(const char* key,const char* value);
-		const char* getRequestHeader(const char* key);
+		//void apppendRequestHeader(const char* key,const char* value);
+		//const char* getRequestHeader(const char* key);
 
+		void appendCustomHeader(va_list arg);
 		void appendPostForm(va_list arg);
 		void appendPostArg(void* data, unsigned int len);
 
@@ -124,15 +125,15 @@ namespace httpengine
 
 	private:
 		//typedef boost::shared_ptr<RequestDetails> URLRequestDetailsPtr;
-		typedef std::map<std::string ,std::string> DLSessionHeaderMAP ;
+		//typedef std::map<std::string ,std::string> DLSessionHeaderMAP ;
 
 		enHttpStatus mCurrentState ;///< Reference enHttpStatus
 		RequestDetailsPtr mRequestDetails;
 		IHttpEngine* mEngine;
 
 		/** Headers map*/
-		DLSessionHeaderMAP mRequestHMap;
-		DLSessionHeaderMAP mResponseHMap;
+		//DLSessionHeaderMAP mRequestHMap;
+		//DLSessionHeaderMAP mResponseHMap;
 		curl_slist* mChunk ;
 
 		/** post form */

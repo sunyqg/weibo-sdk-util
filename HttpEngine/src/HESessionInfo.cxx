@@ -157,18 +157,18 @@ long HESessionInfo::getResponTotalSize()
 void HESessionInfo::initliazeRequestParam()
 {
 	// set request header
-	curl_slist* pchunk = NULL;
-	buildHeaderList(true, &pchunk);
-	if( pchunk) 
-	{
-		if(mChunk)
-		{
-			curl_slist_free_all(mChunk);
-			mChunk = NULL;
-		}
-		curl_easy_setopt(mCURL, CURLOPT_HTTPHEADER, pchunk);
-		mChunk = pchunk;
-	}
+	//curl_slist* pchunk = NULL;
+	//buildHeaderList(true, &pchunk);
+	//if( pchunk) 
+	//{
+	//	if(mChunk)
+	//	{
+	//		curl_slist_free_all(mChunk);
+	//		mChunk = NULL;
+	//	}
+	//	curl_easy_setopt(mCURL, CURLOPT_HTTPHEADER, pchunk);
+	//	mChunk = pchunk;
+	//}
 
 	// Post arg information
 	if (details())
@@ -227,9 +227,7 @@ void HESessionInfo::initializeAsGetMethod()
 void HESessionInfo::initializeAsPostMethod()
 {
 	curl_easy_setopt(mCURL, CURLOPT_WRITEFUNCTION, onCurlWriteFunction);
-	curl_easy_setopt(mCURL, CURLOPT_WRITEDATA, this);	
-    
-	curl_easy_setopt(mCURL, CURLOPT_HTTPHEADER, mChunk);
+	curl_easy_setopt(mCURL, CURLOPT_WRITEDATA, this);
 }
 
 void HESessionInfo::initializeAsPostFormMethod()
@@ -375,41 +373,81 @@ void HESessionInfo::notificationProgress(void)
 	mProgressCounts = time(NULL);
 }
 
-void HESessionInfo::apppendRequestHeader(const char* key,const char* value)
-{
-	if (key && value)
-	{
-		if (mRequestHMap.empty())
-		{
-			mRequestHMap.insert( make_pair(key,value) );
-		}
-		else
-		{
-			DLSessionHeaderMAP::iterator it = mRequestHMap.find(key);
-			if( it != mRequestHMap.end())
-			{
-				it->second = value;
-			}
-			else
-			{
-				mRequestHMap[key] = value;
-			}
-		}
-	}
-}
+//void HESessionInfo::apppendRequestHeader(const char* key,const char* value)
+//{
+//	if (key && value)
+//	{
+//		if (mRequestHMap.empty())
+//		{
+//			mRequestHMap.insert( make_pair(key,value) );
+//		}
+//		else
+//		{
+//			DLSessionHeaderMAP::iterator it = mRequestHMap.find(key);
+//			if( it != mRequestHMap.end())
+//			{
+//				it->second = value;
+//			}
+//			else
+//			{
+//				mRequestHMap[key] = value;
+//			}
+//		}
+//	}
+//}
 
-const char* HESessionInfo::getRequestHeader(const char* key)
+//const char* HESessionInfo::getRequestHeader(const char* key)
+//{
+//	if(!key || *key == '\0' || mRequestHMap.empty())
+//	{
+//		return NULL;
+//	}
+//	DLSessionHeaderMAP::iterator it = mRequestHMap.find(key);
+//	if(it != mRequestHMap.end())
+//	{
+//		return it->second.c_str();
+//	}
+//	return NULL;
+//}
+
+void HESessionInfo::appendCustomHeader(va_list arg)
 {
-	if(!key || *key == '\0' || mRequestHMap.empty())
+	DebugLog(<< __FUNCTION__);
+	if (!arg)
 	{
-		return NULL;
+		DebugLog(<< __FUNCTION__ << " | Args is null!");
+		return ;
 	}
-	DLSessionHeaderMAP::iterator it = mRequestHMap.find(key);
-	if(it != mRequestHMap.end())
+
+	int argCounter = 0;
+	int arraySize  = 0;
+
+	std::string key, value;
+	while (1)
 	{
-		return it->second.c_str();
+		if ((argCounter % 2) == 1) //is value
+		{
+			value = Util::StringUtil::getNotNullString(va_arg(arg, const char*));
+			key += ": ";
+			key += value;
+			mChunk = curl_slist_append(mChunk, key.c_str());
+		}
+		else // is key
+		{
+			key = Util::StringUtil::getNotNullString(va_arg(arg, const char*));
+		}
+
+		if (key.empty())
+		{
+			break;
+		}
+		++ argCounter;
 	}
-	return NULL;
+
+	if (mChunk)
+	{
+		curl_easy_setopt(mCURL, CURLOPT_HTTPHEADER, mChunk);
+	}
 }
 
 void HESessionInfo::appendPostForm(va_list arg)
@@ -573,65 +611,65 @@ RequestDetailsPtr HESessionInfo::details()
 	return mRequestDetails;
 }
 
-void HESessionInfo::appendResponseHeader(const char *key,const char *value)
-{
-	if( key && value)
-	{
-		if(mResponseHMap.empty())
-		{
-			mResponseHMap.insert(make_pair(key,value));
-		}
-		else
-		{
-			DLSessionHeaderMAP::iterator it = mResponseHMap.find(key);
-			if(it != mResponseHMap.end())
-			{
-				it->second = value;
-			}
-			else
-			{
-				mResponseHMap[key] = value;
-			}
-		}
-	}
-}
+//void HESessionInfo::appendResponseHeader(const char *key,const char *value)
+//{
+//	if( key && value)
+//	{
+//		if(mResponseHMap.empty())
+//		{
+//			mResponseHMap.insert(make_pair(key,value));
+//		}
+//		else
+//		{
+//			DLSessionHeaderMAP::iterator it = mResponseHMap.find(key);
+//			if(it != mResponseHMap.end())
+//			{
+//				it->second = value;
+//			}
+//			else
+//			{
+//				mResponseHMap[key] = value;
+//			}
+//		}
+//	}
+//}
 
-const char* HESessionInfo::getResponseHeader(const char* key)
-{
-	if(!key || *key == '\0' || mResponseHMap.empty())
-	{
-		return NULL;
-	}
-	DLSessionHeaderMAP::iterator it = mResponseHMap.find(key);
-	if(it != mResponseHMap.end())
-	{
-		return it->second.c_str();
-	}
-	return NULL;
-}
+//const char* HESessionInfo::getResponseHeader(const char* key)
+//{
+//	if(!key || *key == '\0' || mResponseHMap.empty())
+//	{
+//		return NULL;
+//	}
+//	DLSessionHeaderMAP::iterator it = mResponseHMap.find(key);
+//	if(it != mResponseHMap.end())
+//	{
+//		return it->second.c_str();
+//	}
+//	return NULL;
+//}
 
-void HESessionInfo::buildHeaderList(bool bRequestHeader, curl_slist** ppchunk)
-{
-	if (!ppchunk)
-	{
-		return ;
-	}
-
-	DLSessionHeaderMAP &headermap = bRequestHeader ?  mRequestHMap : mResponseHMap;
-	if (headermap.empty())
-	{
-		return ;
-	}
-
-	DLSessionHeaderMAP::iterator it = headermap.begin();
-	while (it != headermap.end())
-	{
-		char cc[1024] = {0};
-		sprintf(cc,"%s:%s",it->first.c_str(), it->second.c_str());
-		curl_slist_append(*ppchunk, cc);
-		++ it;
-	}
-}
+//void HESessionInfo::buildHeaderList(bool bRequestHeader, curl_slist** ppchunk)
+//{
+//	if (!ppchunk)
+//	{
+//		return ;
+//	}
+//
+//	DLSessionHeaderMAP &headermap = bRequestHeader ?  mRequestHMap : mResponseHMap;
+//	if (headermap.empty())
+//	{
+//		return ;
+//	}
+//
+//	DLSessionHeaderMAP::iterator it = headermap.begin();
+//	while (it != headermap.end())
+//	{
+//		char cc[1024] = {0};
+//		sprintf(cc,"%s:%s",it->first.c_str(), it->second.c_str());
+//		curl_slist_append(*ppchunk, cc);
+//		++ it;
+//	}
+//}
 
 void HESessionInfo::onStart()
 {

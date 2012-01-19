@@ -71,6 +71,14 @@ void HEDriver::thread()
 
 		//queue handle
 		bool bHasHandle = threadScanQueue(multi_curl);
+		
+		if (!bHasHandle)
+		{
+			// TODO(welbon): This will going to be optimize,
+			// We have no handler, wait a signle.
+			sleep(100);
+			continue;
+		}
 
 		int still_running = 0;
 		while(curl_multi_perform(multi_curl, &still_running) == CURLM_CALL_MULTI_PERFORM);
@@ -82,7 +90,7 @@ void HEDriver::thread()
 		//Dispatch
 		threadDispatchSession(multi_curl);
 
-		sleep(100);
+		//sleep(10);
 	}
 	threadFifoCleanup();
 	threadQueueCleanup(multi_curl);
@@ -239,8 +247,8 @@ bool HEDriver::threadMultiURLRoop(CURLM* multi_curl, bool bHasHandle)
 		FD_ZERO(&fdexcep);
 
 		/* set a suitable timeout to play around with */ 
-		timeout.tv_sec = 1;
-		timeout.tv_usec = 0;
+		timeout.tv_sec = 0;
+		timeout.tv_usec = 100 * 1000;
 
 		curl_multi_timeout(multi_curl, &curl_timeo);
 		if(curl_timeo >= 0)
@@ -271,7 +279,10 @@ bool HEDriver::threadMultiURLRoop(CURLM* multi_curl, bool bHasHandle)
 		switch(rc) 
 		{
 		case -1:
-			/* select error */ 
+			{
+				/* select error */ 
+				sleep(100);
+			}
 			break;
 		case 0: /* timeout */
 		default: /* action */ 

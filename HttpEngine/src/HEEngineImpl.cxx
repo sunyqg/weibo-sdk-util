@@ -66,7 +66,7 @@ int HEEngineImpl::startUrlRequest(unsigned int& inOutKey
 	DebugLog(<< __FUNCTION__ 
 		<< "| Url: " << Util::StringUtil::getNotNullString(url) 
 		<< "| Cookie " << Util::StringUtil::getNotNullString(cookie) 
-		<< "| Http method" << method);
+		<< "| Http method: " << method);
 
 	int rt = HE_GENERAL_ERROR;
 	if (!url)
@@ -214,8 +214,14 @@ int HEEngineImpl::setRequestOption(const int requestId, const RequestOptionType 
 
 	case TOT_PROGRESS_FREQUENCE:
 		{
-			sessionPtr->setProgressNotifyFrequency(va_arg(arg , const int));
+			sessionPtr->setProgressNotifyFrequency(va_arg(arg, const int));
 		}
+		break;
+
+	case TOT_CUSTOM_HEADER:
+		{
+			sessionPtr->appendCustomHeader(arg);
+		} 
 		break;
 
 	default:
