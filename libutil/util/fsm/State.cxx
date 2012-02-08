@@ -1,4 +1,5 @@
 #include "stdafx.h"
+
 #include <util/fsm/State.hxx>
 #include <util/fsm/Machine.hxx>
 #include <cassert>

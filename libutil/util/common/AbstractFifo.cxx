@@ -1,4 +1,7 @@
-#include "stdafx.h"
+#if defined (_WIN32)
+#   include "stdafx.h"
+#endif //_WIN32
+
 #include <cstdlib>
 #include <util/common/AbstractFifo.hxx>
 
