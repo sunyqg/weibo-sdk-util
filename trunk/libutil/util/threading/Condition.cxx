@@ -1,4 +1,6 @@
-#include "stdafx.h"
+#if defined (_WIN32)
+#   include "stdafx.h"
+#endif //
 
 #if !defined(_WIN32) || defined(HAVE_LIBPTHREAD)
 #  include <pthread.h>
