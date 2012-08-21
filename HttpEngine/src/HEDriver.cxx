@@ -19,24 +19,30 @@
 
 using namespace httpengine;
 
+static const int HEMAXDELAY = 50; // ms
+
 HEDriver::HEDriver(void)
 {
+	curl_global_init(CURL_GLOBAL_ALL);
 }
 
 HEDriver::~HEDriver(void)
 {
+	curl_global_cleanup();
 }
 
 void HEDriver::addSession(HESessionInfoPtr ptr, const unsigned int &sessionId)
 {
-	HEDriverCommandPtr cmdPtr(new HEDriverCommandAdd(&mSessionInfoPtrMap, ptr));
-	mCmdFifo.add(cmdPtr);
+	HEDriverCommandPtr cmdPtr(new HEDriverCommandAdd(ptr));
+	Util::Lock m(mMutex);
+	mCmdFifo.push_back(cmdPtr);
 }
 
 void HEDriver::removeSession(const unsigned int sessionId)
 {
-	HEDriverCommandPtr cmdPtr(new HEDriverCommandRemove(&mSessionInfoPtrMap, sessionId));
-	mCmdFifo.add(cmdPtr);
+	HEDriverCommandPtr cmdPtr(new HEDriverCommandRemove(sessionId));
+	Util::Lock m(mMutex);
+	mCmdFifo.push_back(cmdPtr);
 }
 
 const HESessionInfoPtr HEDriver::getSession(const unsigned int sessionId)
@@ -57,7 +63,6 @@ const unsigned int HEDriver::getCounts() const
 
 void HEDriver::thread()
 {
-	curl_global_init(CURL_GLOBAL_ALL);
 	CURLM* multi_curl = curl_multi_init();
 	if( !multi_curl)
 	{
@@ -69,6 +74,9 @@ void HEDriver::thread()
 	{
 		threadPerformCommand(multi_curl);
 
+		int still_running = 0;
+		curl_multi_perform(multi_curl, &still_running);
+
 		//queue handle
 		bool bHasHandle = threadScanQueue(multi_curl);
 		
@@ -76,12 +84,9 @@ void HEDriver::thread()
 		{
 			// TODO(welbon): This will going to be optimize,
 			// We have no handler, wait a signle.
-			sleep(100);
+			sleep(HEMAXDELAY);
 			continue;
 		}
-
-		int still_running = 0;
-		while(curl_multi_perform(multi_curl, &still_running) == CURLM_CALL_MULTI_PERFORM);
 
 		//curl handle
 		threadMultiURLRoop(multi_curl, bHasHandle);
@@ -89,21 +94,22 @@ void HEDriver::thread()
 
 		//Dispatch
 		threadDispatchSession(multi_curl);
-
-		//sleep(10);
 	}
 	threadFifoCleanup();
 	threadQueueCleanup(multi_curl);
 	curl_multi_cleanup(multi_curl);
-	curl_global_cleanup();
 }
 
 void HEDriver::threadPerformCommand(CURLM* multi_curl)
 {
-	if( mCmdFifo.size() > 0 )
+	std::list<HEDriverCommandPtr> cmds;
 	{
-		HEDriverCommandPtr ptr = mCmdFifo.getNext();
-		ptr->execute(multi_curl);
+		Util::Lock m(mMutex);
+		cmds.swap(mCmdFifo);
+	}
+	for (std::list<HEDriverCommandPtr>::iterator i = cmds.begin(); i != cmds.end(); ++i)
+	{
+		(*i)->execute(mSessionInfoPtrMap, multi_curl);
 	}
 }
 
@@ -248,20 +254,12 @@ bool HEDriver::threadMultiURLRoop(CURLM* multi_curl, bool bHasHandle)
 
 		/* set a suitable timeout to play around with */ 
 		timeout.tv_sec = 0;
-		timeout.tv_usec = 100 * 1000;
+		timeout.tv_usec = HEMAXDELAY * 1000;
 
 		curl_multi_timeout(multi_curl, &curl_timeo);
-		if(curl_timeo >= 0)
+		if(curl_timeo >= 0 && curl_timeo < HEMAXDELAY)
 		{
-			timeout.tv_sec = curl_timeo / 1000;
-			if( timeout.tv_sec > 1)
-			{
-				timeout.tv_sec = 1;
-			}
-			else
-			{
-				timeout.tv_usec = (curl_timeo % 1000) * 1000;
-			}
+			timeout.tv_usec = curl_timeo * 1000;
 		}
 
 		/* get file descriptors from the transfers */ 
@@ -281,7 +279,7 @@ bool HEDriver::threadMultiURLRoop(CURLM* multi_curl, bool bHasHandle)
 		case -1:
 			{
 				/* select error */ 
-				sleep(100);
+				sleep(HEMAXDELAY);
 			}
 			break;
 		case 0: /* timeout */

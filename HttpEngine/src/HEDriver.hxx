@@ -4,8 +4,9 @@
 
 
 #include <map>
+#include <list>
 #include <curl/curl.h>
-#include <util/common/Fifo.hxx>
+#include <util/threading/Mutex.hxx>
 #include <util/threading/ThreadIf.hxx>
 
 #include "HESessionInfo.hxx"
@@ -24,8 +25,6 @@ namespace httpengine
 	class HEDriver : public Util::ThreadIf
 	{
 	public:
-		typedef std::map<unsigned int, HESessionInfoPtr> HESessionInfoPtrMap;
-
 		HEDriver(void);
 		virtual ~HEDriver(void);
 
@@ -48,7 +47,8 @@ namespace httpengine
 
 	private:
 		HESessionInfoPtrMap mSessionInfoPtrMap;
-		Util::Fifo<IHEDriverCommand> mCmdFifo;
+		Util::Mutex mMutex;
+		std::list<HEDriverCommandPtr> mCmdFifo;
 	};
 }
 

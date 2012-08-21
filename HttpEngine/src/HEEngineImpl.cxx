@@ -295,7 +295,11 @@ std::ostream& operator << (std::ostream &str, const HttpMethod& ehm)
 	case HM_POSTFORM:
 		return str << static_cast<const char*>("HM_POSTFORM");
 
+	case HM_DELETE:
+		return str << static_cast<const char*>("HM_DELETE");
+
 	default:
+		str << "HM_UNKNOWN";
 		break;
 	}
 	return str;
