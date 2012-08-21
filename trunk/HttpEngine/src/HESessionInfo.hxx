@@ -146,7 +146,7 @@ namespace httpengine
 		/** call "setProgressNotifyFrequency" function to set this value.
 		* if this value will not 0, duplicate notifications outside */
 		unsigned long mProgressFrequency;
-		unsigned long mProgressCounts;
+		time_t mLastProgressTick;
 
 		//friend class HEDriver;
 		//friend class HEDriverCommandRemove;

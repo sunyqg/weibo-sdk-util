@@ -6,8 +6,7 @@ using namespace httpengine;
 ////////////////////////////////////////////////////////////////////////
 // http engine driver base command
 
-HEDriverCommandBase::HEDriverCommandBase(void* pMap)
-: mSessionMapPtr(pMap)
+HEDriverCommandBase::HEDriverCommandBase()
 {
 
 }
@@ -17,7 +16,7 @@ HEDriverCommandBase::~HEDriverCommandBase()
 
 }
 
-void HEDriverCommandBase::execute(void* param)
+void HEDriverCommandBase::execute(HESessionInfoPtrMap& sessionMap, void* param)
 {
 
 }
@@ -25,9 +24,8 @@ void HEDriverCommandBase::execute(void* param)
 ////////////////////////////////////////////////////////////////////////
 // http engine driver command - add
 
-HEDriverCommandAdd::HEDriverCommandAdd(void* pMap, HESessionInfoPtr ptrSession)
-: HEDriverCommandBase(pMap)
-, mHESessionInfoPtr(ptrSession)
+HEDriverCommandAdd::HEDriverCommandAdd(HESessionInfoPtr ptrSession)
+: mHESessionInfoPtr(ptrSession)
 {
 }
 
@@ -35,27 +33,18 @@ HEDriverCommandAdd::~HEDriverCommandAdd()
 {
 }
 
-void HEDriverCommandAdd::execute(void* param)
+void HEDriverCommandAdd::execute(HESessionInfoPtrMap& sessionMap, void* param)
 {
-	HEDriver::HESessionInfoPtrMap* pSessionMap = 
-		reinterpret_cast<HEDriver::HESessionInfoPtrMap*>(mSessionMapPtr);
-
-	if(!pSessionMap)
+	if( sessionMap.empty())
 	{
-		assert(false);
-		return ;
-	}
-
-	if( pSessionMap->empty())
-	{
-		pSessionMap->insert(std::make_pair(mHESessionInfoPtr->details()->mKey, mHESessionInfoPtr));
+		sessionMap.insert(std::make_pair(mHESessionInfoPtr->details()->mKey, mHESessionInfoPtr));
 	}
 	else
 	{
-		HEDriver::HESessionInfoPtrMap::iterator it = pSessionMap->find(mHESessionInfoPtr->details()->mKey);
-		if(it == pSessionMap->end())
+		HESessionInfoPtrMap::iterator it = sessionMap.find(mHESessionInfoPtr->details()->mKey);
+		if(it == sessionMap.end())
 		{
-			pSessionMap->insert(std::make_pair(mHESessionInfoPtr->details()->mKey,mHESessionInfoPtr));
+			sessionMap.insert(std::make_pair(mHESessionInfoPtr->details()->mKey,mHESessionInfoPtr));
 		}
 	}
 }
@@ -63,9 +52,8 @@ void HEDriverCommandAdd::execute(void* param)
 ////////////////////////////////////////////////////////////////////////
 // http engine driver command - remove
 
-HEDriverCommandRemove::HEDriverCommandRemove(void *pMap,const int iKey)
-: HEDriverCommandBase(pMap)
-, mDelKey(iKey) 
+HEDriverCommandRemove::HEDriverCommandRemove(int iKey)
+: mDelKey(iKey) 
 {
 
 }
@@ -75,20 +63,12 @@ HEDriverCommandRemove::~HEDriverCommandRemove()
 
 }
 
-void HEDriverCommandRemove::execute(void *param)
+void HEDriverCommandRemove::execute(HESessionInfoPtrMap& sessionMap, void* param)
 {
-	HEDriver::HESessionInfoPtrMap* pSessionMap = 
-		reinterpret_cast<HEDriver::HESessionInfoPtrMap*>(mSessionMapPtr);
-
-	if (!pSessionMap)
+	if (!sessionMap.empty()) 
 	{
-		assert(false);
-		return ;
-	}
-	if (!pSessionMap->empty()) 
-	{
-		HEDriver::HESessionInfoPtrMap::iterator it = pSessionMap->find(mDelKey);
-		if( it != pSessionMap->end())
+		HESessionInfoPtrMap::iterator it = sessionMap.find(mDelKey);
+		if( it != sessionMap.end())
 		{
 			HESessionInfoPtr pMultiSession = it->second;
 			if( pMultiSession) 
@@ -102,7 +82,7 @@ void HEDriverCommandRemove::execute(void *param)
 				pMultiSession->onRelease();
 				pMultiSession.reset();
 			}
-			pSessionMap->erase(it);
+			sessionMap.erase(it);
 		}
 	}
 }

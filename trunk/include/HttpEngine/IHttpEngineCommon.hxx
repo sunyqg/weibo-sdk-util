@@ -12,6 +12,7 @@ namespace httpengine
 		HM_GET,
 		HM_POST,
 		HM_POSTFORM,
+		HM_DELETE
 	};
 
 	/** from wininet important err code */

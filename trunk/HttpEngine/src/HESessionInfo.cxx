@@ -25,13 +25,60 @@
 
 using namespace httpengine;
 
+
+#ifndef _DEBUG
+#define _DEBUG 1
+#endif
+
+#ifdef _DEBUG
+static void dumpasiic(FILE *stream, const unsigned char *ptr, size_t size, curl_infotype infotype)
+{
+	unsigned int width = 0x40;
+	int line = 0;
+	fprintf(stream, "%d bytes (0x%x) -------------------------\n", size, size);
+	for (int i = 0; i < size && line < 4; i += width, line++)
+	{
+		fprintf(stream, "%02x: ", i);
+		for (int c = 0; (c < width) && (i + c < size); c++)
+		{
+			fprintf(stream, "%c", isprint(ptr[i+c]) ? ptr[i+c] : '.');
+		}
+		fputc('\n', stream);
+	}
+	fflush(stream);
+}
+
+static int my_trace(CURL *handle, curl_infotype type, unsigned char *data, size_t size, void *userp)
+{
+	//FILE *output = fopen("d:/curl_http.log", "a+");
+	FILE* output = stdout;
+	const char *text;
+	static const char s_infotype[CURLINFO_END][3] = {	"* ", "< ", "> ", "{ ", "} ", "{ ", "} " };
+	fwrite(s_infotype[type], 2, 1, output);
+	switch(type)
+	{
+	case CURLINFO_TEXT:
+	case CURLINFO_HEADER_OUT:
+	case CURLINFO_HEADER_IN:
+		fwrite(data, size, 1, output);
+		break;
+
+	default:
+		dumpasiic(output, data, size, type);
+		break;
+	}
+	//fclose(output);
+	return 0;
+}
+#endif
+
 HESessionInfo::HESessionInfo(RequestDetailsPtr& pDetails,IHttpEngine* pEngine) 
 : mRequestDetails(pDetails)
 , mCurrentState(E_HTTPSTATUS_CLOSED)
 , mEngine(pEngine)
 , mCURL(NULL)
 , mProgressFrequency(0)
-, mProgressCounts(0)
+, mLastProgressTick(0)
 , mChunk(NULL)
 , mFormstart(NULL)
 , mFormend(NULL)
@@ -65,8 +112,10 @@ void HESessionInfo::initSessionInfo()
 	initliazeProxyInfo();
 	initliazeRequestParam();
 
-	switch(details()->mHttpMethod)
+	switch(mRequestDetails->mHttpMethod)
 	{
+	case HM_DELETE:
+		curl_easy_setopt(mCURL, CURLOPT_CUSTOMREQUEST, "DELETE");
 	case HM_GET:
 		initializeAsGetMethod();
 		break;
@@ -93,7 +142,10 @@ void HESessionInfo::initSessionInfo()
 	curl_easy_setopt(mCURL, CURLOPT_SSL_VERIFYHOST, 0L);
 
 	// Verbose
+#ifdef _DEBUG
 	curl_easy_setopt(mCURL, CURLOPT_VERBOSE, 1L);
+	curl_easy_setopt(mCURL, CURLOPT_DEBUGFUNCTION, my_trace);
+#endif
 
 	//curl_easy_setopt(mCURL, CURLOPT_NOBODY, 1);
 	//curl_easy_setopt(mCURL, CURLOPT_HEADER, 1);
@@ -140,7 +192,7 @@ const enHttpStatus HESessionInfo::getCurrentStatus() const
 long HESessionInfo::getResponTotalSize()
 {
 	double total = 0;
-	if (details()->mHttpMethod == HM_GET)
+	if (mRequestDetails->mHttpMethod == HM_GET)
 	{
 		curl_easy_getinfo(mCURL, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &total);
 	}
@@ -168,10 +220,7 @@ void HESessionInfo::initliazeRequestParam()
 	//}
 
 	// Post arg information
-	if (details())
-	{
-		appendPostArg((void*)details()->mPostArg.c_str(), details()->mPostArg.length());
-	}
+	appendPostArg((void*)mRequestDetails->mPostArg.c_str(), mRequestDetails->mPostArg.length());
 }
 
 void HESessionInfo::initliazeProxyInfo()
@@ -202,8 +251,8 @@ void HESessionInfo::initliazeProxyInfo()
 		}
 
 		// HOST and port
-		char buf[512]={0};
-		sprintf(buf, "%s:%d", mProxyInfo.mServer.c_str(), mProxyInfo.mPort);
+		char buf[512];
+		snprintf(buf, sizeof(buf) - 1, "%s:%d", mProxyInfo.mServer.c_str(), mProxyInfo.mPort);
 		curl_easy_setopt(mCURL, CURLOPT_PROXY, buf);
 
 		// User name
@@ -230,7 +279,7 @@ void HESessionInfo::initializeAsPostMethod()
 void HESessionInfo::initializeAsPostFormMethod()
 {
 	curl_easy_setopt(mCURL, CURLOPT_READFUNCTION, onCurlReadFunction);
-	curl_easy_setopt(mCURL, CURLOPT_READDATA, this);
+//	curl_easy_setopt(mCURL, CURLOPT_READDATA, this);
 
 	curl_easy_setopt(mCURL, CURLOPT_WRITEFUNCTION, onCurlWriteFunction);
 	curl_easy_setopt(mCURL, CURLOPT_WRITEDATA, this);
@@ -238,38 +287,38 @@ void HESessionInfo::initializeAsPostFormMethod()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Static function for cURL callback
-void HESessionInfo::spliteHeaderParam(char* ptr, size_t nmemb, char *outparam, char *outvalue)
-{
-	if(!ptr || *ptr == '\0')
-	{
-		return ;
-	}
-
-	const char* h = "HTTP/1.1";
-	std::string strret = ptr;
-	int iRetcode = strret.find(h);
-	if( iRetcode != std::string::npos )
-	{
-		strcpy(outparam,"retcode" );
-		strret = strret.substr( strlen(h) + 1,strret.length() - 1);
-		strret = strret.substr( 0,strret.find(" "));
-		strcpy( outvalue,strret.c_str());
-	}
-	else
-	{
-		int isplite = strret.find(":");
-		if( isplite == std::string::npos)
-		{
-			return ;
-		}
-		strcpy(outparam,strret.substr(0,isplite).c_str());
-		strcpy(outvalue,strret.substr(isplite + 2,strret.length() - 1).c_str());
-	}
-}
+//void HESessionInfo::spliteHeaderParam(char* ptr, size_t nmemb, char *outparam, char *outvalue)
+//{
+//	if(!ptr || *ptr == '\0')
+//	{
+//		return ;
+//	}
+//
+//	const char* h = "HTTP/1.1";
+//	std::string strret = ptr;
+//	int iRetcode = strret.find(h);
+//	if( iRetcode != std::string::npos )
+//	{
+//		strcpy(outparam,"retcode" );
+//		strret = strret.substr( strlen(h) + 1,strret.length() - 1);
+//		strret = strret.substr( 0,strret.find(" "));
+//		strcpy( outvalue,strret.c_str());
+//	}
+//	else
+//	{
+//		int isplite = strret.find(":");
+//		if( isplite == std::string::npos)
+//		{
+//			return ;
+//		}
+//		strcpy(outparam,strret.substr(0,isplite).c_str());
+//		strcpy(outvalue,strret.substr(isplite + 2,strret.length() - 1).c_str());
+//	}
+//}
 
 bool HESessionInfo::checkHttpResponse()
 {
-	if (details()->mErrorCode != 0)
+	if (mRequestDetails->mErrorCode != 0)
 	{
 		return false;
 	}
@@ -280,33 +329,20 @@ bool HESessionInfo::checkHttpResponse()
 
 	if (lRetCode >= 400)
 	{
-		details()->mErrorCode = HE_PROTOCOL_ERROR;
-		details()->mErrorSubCode = lRetCode;
+		mRequestDetails->mErrorCode = HE_PROTOCOL_ERROR;
+		mRequestDetails->mErrorSubCode = lRetCode;
 	}
 	return true;
 }
 
 size_t HESessionInfo::onCurlHeaderWriteFunction(void* ptr, size_t size, size_t nmemb, void *data)
 {
-	HESessionInfo* pDLMultiInfo = reinterpret_cast<HESessionInfo*>(data);
-	if (pDLMultiInfo)
-	{
-		pDLMultiInfo->checkHttpResponse();
-		return pDLMultiInfo->doHeaderData(ptr, size, nmemb);
-	}
-	return (size * nmemb);
+	return static_cast<HESessionInfo*>(data)->doHeaderData(ptr, size, nmemb);
 }
 
 size_t HESessionInfo::onCurlWriteFunction(void* ptr, size_t size, size_t nmemb, void* data)
 {
-	//size_t realsize = size * nmemb;
-	HESessionInfo* pDLMultiInfo = reinterpret_cast<HESessionInfo*>(data);
-	if (pDLMultiInfo)
-	{
-		// Notify request read event.
-		return pDLMultiInfo->doWriteData(ptr, size, nmemb);
-	}
-	return (size * nmemb);
+	return static_cast<HESessionInfo*>(data)->doWriteData(ptr, size, nmemb);
 }
 
 size_t Http_formget_callback(void *arg, const char *buf, size_t len)
@@ -324,50 +360,36 @@ size_t HESessionInfo::onCurlReadFunction(void* ptr, size_t size, size_t nmemb, v
 	PostFormStreamData* formData = static_cast<PostFormStreamData*>(data);
 	if (formData)
 	{
-		HEEngineImpl* engine = dynamic_cast<HEEngineImpl*>(formData->mHttpEngine);
-		if (engine)
-		{
-			const RequestDetailsPtr reqDetail 
-				= engine->internalGetHttpRequestById(formData->mRequestId);
-
-			if (reqDetail)
-			{
-				return engine->OnRequestReadEvent(reqDetail->mKey, ptr, size, nmemb
-					, reqDetail->mErrorCode, reqDetail->mErrorSubCode, reqDetail->mUserData);
-			}
-		}
+		return formData->mHttpEngine->OnRequestReadEvent(formData->mRequestId, ptr, size, nmemb,
+			0, 0, formData->mUsrData);
 	}
-	return 0;
+	return -1;
 }
 
 size_t HESessionInfo::doHeaderData(void* ptr, size_t size, size_t nmemb)
 {
-	if (mEngine)
-	{
-		return mEngine->OnRequestHeaderEvent(details()->mKey, ptr, size, nmemb
-			, details()->mErrorCode, details()->mErrorSubCode, details()->mUserData);
-	}
-	return (size * nmemb);
+	return mEngine->OnRequestHeaderEvent(mRequestDetails->mKey, ptr, size, nmemb
+		, mRequestDetails->mErrorCode, mRequestDetails->mErrorSubCode, mRequestDetails->mUserData);
 }
 
 size_t HESessionInfo::doWriteData(void* ptr, size_t size, size_t nmemb)
 {
-	if (mEngine)
-	{
-		return mEngine->OnRequestWriteEvent(details()->mKey, ptr, size, nmemb
-			, details()->mErrorCode, details()->mErrorSubCode, details()->mUserData);
-	}
-	return (size * nmemb);
+	return mEngine->OnRequestWriteEvent(mRequestDetails->mKey, ptr, size, nmemb
+		, mRequestDetails->mErrorCode, mRequestDetails->mErrorSubCode, mRequestDetails->mUserData);
 }
 
 void HESessionInfo::notificationProgress(void)
 {
 	// Progress handle.
-	if(mProgressFrequency > 0 && mProgressFrequency <= (time(NULL) - mProgressCounts))
+	if (mProgressFrequency > 0)
 	{
-		onProgress();
+		time_t now = time(NULL);
+		if (mProgressFrequency <= (now - mLastProgressTick))
+		{
+			onProgress();
+			mLastProgressTick = now;
+		}
 	}
-	mProgressCounts = time(NULL);
 }
 
 //void HESessionInfo::apppendRequestHeader(const char* key,const char* value)
@@ -512,13 +534,13 @@ void HESessionInfo::appendPostArg(void* data, unsigned int len)
 		return ;
 	}
 
-	switch(details()->mHttpMethod)
+	switch(mRequestDetails->mHttpMethod)
 	{
 	case HM_POST:
 		{
 			// Fill the post to curl.
 			curl_easy_setopt(mCURL, CURLOPT_POSTFIELDS, postarg);
-			curl_easy_setopt(mCURL, CURLOPT_POSTFIELDSIZE, strlen(postarg) * sizeof(char));
+			curl_easy_setopt(mCURL, CURLOPT_POSTFIELDSIZE, len * sizeof(char));
 		}
 		break;
 
@@ -540,16 +562,8 @@ void HESessionInfo::appendPostArg(void* data, unsigned int len)
 				{
 					if (!argName.empty() && !argValue.empty())
 					{
-						char* valueDecode = NULL;
-						lo_UrlDecodeA(&valueDecode, argValue.c_str(), argValue.length());
-
-						if (valueDecode)
-						{
-							curl_formadd(&mFormstart, &mFormend, CURLFORM_COPYNAME, argName.c_str()
-								, CURLFORM_COPYCONTENTS, valueDecode, CURLFORM_END);
-
-							free(valueDecode);
-						}
+						curl_formadd(&mFormstart, &mFormend, CURLFORM_COPYNAME, argName.c_str(),
+							CURLFORM_COPYCONTENTS, argValue.c_str(), CURLFORM_END);
 					}
 					argName.clear();
 					argValue.clear();
@@ -569,15 +583,8 @@ void HESessionInfo::appendPostArg(void* data, unsigned int len)
 			if (!argName.empty() && !argValue.empty())
 			{
 				char* valueDecode = NULL;
-				lo_UrlDecodeA(&valueDecode, argValue.c_str(), argValue.length());
-
-				if (valueDecode)
-				{
-					curl_formadd(&mFormstart, &mFormend, CURLFORM_COPYNAME, argName.c_str()
-						, CURLFORM_COPYCONTENTS, valueDecode, CURLFORM_END);
-
-					free(valueDecode);
-				}
+				curl_formadd(&mFormstart, &mFormend, CURLFORM_COPYNAME, argName.c_str(),
+					CURLFORM_COPYCONTENTS, argValue.c_str(), CURLFORM_END);
 			}
 			else
 			{
@@ -587,7 +594,7 @@ void HESessionInfo::appendPostArg(void* data, unsigned int len)
 		break;
 	default:
 		{
-			WarningLog(<< __FUNCTION__ << "| Not filled post arg, may be http method wrong, http method : " << details()->mHttpMethod);
+			WarningLog(<< __FUNCTION__ << "| Not filled post arg, may be http method wrong, http method : " << mRequestDetails->mHttpMethod);
 		}
 		break;
 	}
@@ -670,12 +677,9 @@ RequestDetailsPtr HESessionInfo::details()
 
 void HESessionInfo::onStart()
 {
-	if(mEngine && details())
-	{
-		mEngine->OnRequestStartedNotify(details()->mKey, details()->mErrorCode, details()->mErrorSubCode, details()->mUserData);
-	}
+	mEngine->OnRequestStartedNotify(mRequestDetails->mKey, mRequestDetails->mErrorCode, mRequestDetails->mErrorSubCode, mRequestDetails->mUserData);
 
-	if (mFormstart && HM_POSTFORM == details()->mHttpMethod)
+	if (mFormstart && HM_POSTFORM == mRequestDetails->mHttpMethod)
 	{
 		curl_easy_setopt(mCURL, CURLOPT_HTTPPOST, mFormstart);
 	}
@@ -683,62 +687,46 @@ void HESessionInfo::onStart()
 
 void HESessionInfo::onAbort()
 {
-	if (mEngine && details())
-	{
-		mEngine->OnRequestStopedNotify(details()->mKey, details()->mErrorCode, details()->mErrorSubCode, details()->mUserData);
-	}
+	mEngine->OnRequestStopedNotify(mRequestDetails->mKey, mRequestDetails->mErrorCode, mRequestDetails->mErrorSubCode, mRequestDetails->mUserData);
 }
 
 void HESessionInfo::onError()
 {
-	if (mEngine && details())
-	{
-		//mCurrentState = E_HTTPSTATUS_ERROR;
-		mEngine->OnRequestErroredNotify(details()->mKey, details()->mErrorCode, details()->mErrorSubCode, details()->mUserData);
-	}
+	mEngine->OnRequestErroredNotify(mRequestDetails->mKey, mRequestDetails->mErrorCode, mRequestDetails->mErrorSubCode, mRequestDetails->mUserData);
 }
 
 void HESessionInfo::onProgress()
 {
-	if (mEngine && details())
-	{
-		double total = 0;
-		double complated = 0;
-		double speed = 0;
+	double total = 0;
+	double complated = 0;
+	double speed = 0;
 
-		if (details()->mHttpMethod == HM_GET)
-		{
-			curl_easy_getinfo(mCURL, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &total);
-			curl_easy_getinfo(mCURL, CURLINFO_SIZE_DOWNLOAD, &complated);
-			curl_easy_getinfo(mCURL, CURLINFO_SPEED_DOWNLOAD, &speed);
-		}
-		else
-		{
-			curl_easy_getinfo(mCURL, CURLINFO_CONTENT_LENGTH_UPLOAD, &total);
-			curl_easy_getinfo(mCURL, CURLINFO_SIZE_UPLOAD, &complated);
-			curl_easy_getinfo(mCURL, CURLINFO_SPEED_UPLOAD, &speed);
-		}
-		mEngine->OnRequestProgressNotify(details()->mKey, total, complated, speed);
+	if (mRequestDetails->mHttpMethod == HM_GET)
+	{
+		curl_easy_getinfo(mCURL, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &total);
+		curl_easy_getinfo(mCURL, CURLINFO_SIZE_DOWNLOAD, &complated);
+		curl_easy_getinfo(mCURL, CURLINFO_SPEED_DOWNLOAD, &speed);
 	}
+	else
+	{
+		curl_easy_getinfo(mCURL, CURLINFO_CONTENT_LENGTH_UPLOAD, &total);
+		curl_easy_getinfo(mCURL, CURLINFO_SIZE_UPLOAD, &complated);
+		curl_easy_getinfo(mCURL, CURLINFO_SPEED_UPLOAD, &speed);
+	}
+	mEngine->OnRequestProgressNotify(mRequestDetails->mKey, total, complated, speed);
 }
 
 void HESessionInfo::onComplate()
 {
-	if(mEngine && details())
-	{
-		//updateDownloadDetails();
-		//mCurrentState = E_HTTPSTATUS_COMPLETE;
-		mEngine->OnRequestComplatedNotify(details()->mKey, details()->mErrorCode, details()->mErrorSubCode, details()->mUserData);
-	}
+	//updateDownloadDetails();
+	//mCurrentState = E_HTTPSTATUS_COMPLETE;
+	mEngine->OnRequestComplatedNotify(mRequestDetails->mKey, mRequestDetails->mErrorCode, mRequestDetails->mErrorSubCode, mRequestDetails->mUserData);
 }
 
 void HESessionInfo::onRelease()
 {
 	// Notify outside we will release this session
-	if(mEngine && details())
-	{
-		mEngine->OnRequestReleaseNotify(details()->mKey, details()->mErrorCode, details()->mErrorSubCode, details()->mUserData);
-	}
+	mEngine->OnRequestReleaseNotify(mRequestDetails->mKey, mRequestDetails->mErrorCode, mRequestDetails->mErrorSubCode, mRequestDetails->mUserData);
 }
 
 CURLformoption HESessionInfo::formtypeToCurlformtype(const PostFormType type) const

@@ -10,21 +10,19 @@ namespace httpengine
 	class HEDriverCommandBase : public IHEDriverCommand
 	{
 	public:
-		HEDriverCommandBase(void* pMap);
-	    virtual ~HEDriverCommandBase();
+		HEDriverCommandBase();
+	  virtual ~HEDriverCommandBase();
 
-		virtual void execute(void* param);
-	protected:
-		void* mSessionMapPtr;
+		virtual void execute(HESessionInfoPtrMap& sessionMap, void* param);
 	};
 
 	class HEDriverCommandAdd : public HEDriverCommandBase
 	{
 	public:
-		HEDriverCommandAdd(void* pMap, HESessionInfoPtr ptrSession);
+		HEDriverCommandAdd(HESessionInfoPtr ptrSession);
 		virtual ~HEDriverCommandAdd();
 
-		virtual void execute(void* param);
+		virtual void execute(HESessionInfoPtrMap& sessionMap, void* param);
 
 	protected:
 		HESessionInfoPtr mHESessionInfoPtr;
@@ -33,10 +31,10 @@ namespace httpengine
 	class HEDriverCommandRemove : public HEDriverCommandBase
 	{
 	public:
-		HEDriverCommandRemove(void* pMap,const int iKey);
+		HEDriverCommandRemove(int iKey);
 		virtual ~HEDriverCommandRemove();
 
-		virtual void execute(void* param);
+		virtual void execute(HESessionInfoPtrMap& sessionMap, void* param);
 
 	protected:
 		int mDelKey;
