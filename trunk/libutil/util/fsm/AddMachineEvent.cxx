@@ -1,7 +1,4 @@
-#if defined (_WIN32)
-#   include "stdafx.h"
-#endif //_WIN32
-
+#include "stdafx.h"
 
 #include <util/fsm/AddMachineEvent.hxx>
 #include <util/fsm/Machine.hxx>
