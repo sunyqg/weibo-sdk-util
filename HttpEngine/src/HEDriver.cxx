@@ -21,7 +21,7 @@ using namespace httpengine;
 
 static const int HEMAXDELAY = 50; // ms
 
-HEDriver::HEDriver(void)
+HEDriver::HEDriver(void) : mSessionCount(0)
 {
 	curl_global_init(CURL_GLOBAL_ALL);
 }
@@ -34,14 +34,28 @@ HEDriver::~HEDriver(void)
 void HEDriver::addSession(HESessionInfoPtr ptr, const unsigned int &sessionId)
 {
 	HEDriverCommandPtr cmdPtr(new HEDriverCommandAdd(ptr));
-	Util::Lock m(mMutex);
+	Util::Lock m(mMutexFifo);
 	mCmdFifo.push_back(cmdPtr);
 }
 
 void HEDriver::removeSession(const unsigned int sessionId)
 {
 	HEDriverCommandPtr cmdPtr(new HEDriverCommandRemove(sessionId));
-	Util::Lock m(mMutex);
+	Util::Lock m(mMutexFifo);
+	mCmdFifo.push_back(cmdPtr);
+}
+
+void HEDriver::stopSession(const unsigned int sessionId)
+{
+	HEDriverCommandPtr cmdPtr(new HEDriverCommandStop(sessionId));
+	Util::Lock m(mMutexFifo);
+	mCmdFifo.push_back(cmdPtr);
+}
+
+void HEDriver::clearSession()
+{
+	HEDriverCommandPtr cmdPtr(new HEDriverCommandClear());
+	Util::Lock m(mMutexFifo);
 	mCmdFifo.push_back(cmdPtr);
 }
 
@@ -53,12 +67,7 @@ const HESessionInfoPtr HEDriver::getSession(const unsigned int sessionId)
 	{
 		ptr = it->second;
 	}
-    return ptr;
-}
-
-const unsigned int HEDriver::getCounts() const
-{
-	return mSessionInfoPtrMap.size();
+	return ptr;
 }
 
 void HEDriver::thread()
@@ -95,21 +104,25 @@ void HEDriver::thread()
 		//Dispatch
 		threadDispatchSession(multi_curl);
 	}
-	threadFifoCleanup();
 	threadQueueCleanup(multi_curl);
 	curl_multi_cleanup(multi_curl);
 }
 
 void HEDriver::threadPerformCommand(CURLM* multi_curl)
 {
-	std::list<HEDriverCommandPtr> cmds;
+	HEDriverCommandPtr ptr;
 	{
-		Util::Lock m(mMutex);
-		cmds.swap(mCmdFifo);
+		Util::Lock m(mMutexFifo);
+		if (!mCmdFifo.empty())
+		{
+			ptr = mCmdFifo.front();
+			mCmdFifo.pop_front();
+		}
 	}
-	for (std::list<HEDriverCommandPtr>::iterator i = cmds.begin(); i != cmds.end(); ++i)
+	if (ptr)
 	{
-		(*i)->execute(mSessionInfoPtrMap, multi_curl);
+		ptr->execute(mSessionInfoPtrMap, multi_curl);
+		boost::interprocess::detail::atomic_write32(&mSessionCount, mSessionInfoPtrMap.size());
 	}
 }
 
@@ -209,6 +222,7 @@ bool HEDriver::threadScanQueue(CURLM* multi_curl)
 				it->second->onRelease();
 				//
 				mSessionInfoPtrMap.erase(it ++);
+				boost::interprocess::detail::atomic_dec32(&mSessionCount);
 
 				// Must continue , cos 'it' aready ++.
 				continue ;
@@ -341,10 +355,12 @@ void HEDriver::threadQueueCleanup(CURLM* multi_curl)
 		++it;
 	}
 	mSessionInfoPtrMap.clear();
+	mSessionCount = 0;
 }
 
 void HEDriver::threadFifoCleanup(void)
 {
+	Util::Lock m(mMutexFifo);
 	mCmdFifo.clear();
 }
 
