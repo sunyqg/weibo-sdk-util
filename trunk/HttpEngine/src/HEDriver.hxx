@@ -5,6 +5,7 @@
 
 #include <map>
 #include <list>
+#include <boost/interprocess/detail/atomic.hpp>
 #include <curl/curl.h>
 #include <util/threading/Mutex.hxx>
 #include <util/threading/ThreadIf.hxx>
@@ -30,8 +31,12 @@ namespace httpengine
 
 		void addSession(HESessionInfoPtr ptr,const unsigned int &sessionId);
 		void removeSession(const unsigned int sessionId);
+		void stopSession(const unsigned int sessionId);
+		void clearSession();
 		const HESessionInfoPtr getSession(const unsigned int sessionId);
-		const unsigned int getCounts() const;
+		const unsigned int getCounts() const {
+			return boost::interprocess::detail::atomic_read32(&mSessionCount);
+		}
 
 		///////////////////////////////////////////////////////////////////////
 		// Util::ThreadIf interface
@@ -47,7 +52,8 @@ namespace httpengine
 
 	private:
 		HESessionInfoPtrMap mSessionInfoPtrMap;
-		Util::Mutex mMutex;
+		mutable volatile boost::uint32_t mSessionCount;
+		mutable Util::Mutex mMutexFifo;
 		std::list<HEDriverCommandPtr> mCmdFifo;
 	};
 }

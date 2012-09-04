@@ -111,11 +111,7 @@ int HEEngineImpl::stopRequest(unsigned int requestId)
 
 	if (mHttpDriver)
 	{
-		HESessionInfoPtr ptr = mHttpDriver->getSession(requestId);
-		if(ptr)
-		{
-			ptr->stop();
-		}
+		mHttpDriver->stopSession(requestId);
 	}
 	return HE_GENERAL_ERROR;
 }
